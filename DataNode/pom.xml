@@ -5,7 +5,11 @@
   <groupId>com.xyy.distributed</groupId>
   <artifactId>DataNode</artifactId>
   <version>0.0.1</version>
-  <packaging>jar</packaging>
+	<modules>
+		<module>api</module>
+		<module>biz</module>
+	</modules>
+	<packaging>pom</packaging>
 
   <name>DataNode</name>
   <url>http://maven.apache.org</url>

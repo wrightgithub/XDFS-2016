@@ -1,10 +1,9 @@
 package com.xdfs.client.dubbo.action;
 
-import java.util.Date;
-
+import com.xdfs.service.DemoServer;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import com.xdfs.server.dubbo.service.DemoServer;
+import java.util.Date;
 
 public class ChatAction {
     /**
