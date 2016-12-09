@@ -5,11 +5,7 @@ import org.apache.log4j.Logger;
 
 import java.util.Date;
 
-/**
- * @author wanggengqi
- * @email wanggengqi@chinasofti.com
- * @date 2014年10月23日 下午1:31:47
- */
+
 public class DemoServerImpl implements DemoServer {
 	private static Logger logger = Logger.getLogger(DemoServerImpl.class);
 

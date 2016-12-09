@@ -3,29 +3,62 @@
  */
 package com.xdfs.main;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
-import org.springframework.context.support.ClassPathXmlApplicationContext;
+import com.xdfs.common.util.RpcUtil;
+import com.xdfs.daemon.ChunkReport;
+import com.xdfs.meta.Chunk;
+import com.xdfs.meta.DataNode;
+import com.xdfs.meta.DefaultParam;
+import com.xdfs.service.ChunkServer;
+import com.xdfs.service.impl.ChunkServerImpl;
+import org.springframework.util.CollectionUtils;
 
-/**
- * @author wanggengqi
- * @email wanggengqi@chinasofti.com
- * @date 2014Äê10ÔÂ23ÈÕ ÏÂÎç1:56:05
- */
 public class BootstrapDataNode {
 
-	/**
-	 * @author wanggengqi
-	 * @date 2014Äê10ÔÂ23ÈÕ ÏÂÎç1:56:05
-	 * @param args
-	 * @return void
-	 * @throws IOException
-	 */
-	public static void main(String[] args) throws IOException {
-		ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(new String[] { "applicationProvider.xml" });
-		context.start();
-		System.out.println("°´ÈÎÒâ¼üÍË³ö");
-		System.in.read();
-	}
+    public static void main(String[] args) throws IOException {
 
+        if (args.length < 1) {
+            System.out.println("please input port");
+            System.exit(1);
+        }
+
+        // æš´éœ²æœåŠ¡
+        Long port = Long.valueOf(args[0]);
+        DataNode dataNode = new DataNode(port);
+        loadChunkList(dataNode);
+        ChunkServer chunkServer = new ChunkServerImpl(dataNode);
+        RpcUtil.providService(ChunkServer.class, chunkServer, Integer.valueOf(args[0]));
+
+        // chunkreport
+        ChunkReport.startChunkReport(dataNode);
+
+        System.out.println("entry any key to quit:");
+        System.in.read();
+    }
+
+    public static void loadChunkList(DataNode dataNode) {
+        List<Chunk> chunkList = dataNode.getChunkList();
+        File file = new File(DefaultParam.BASIC_PATH);
+        File[] fileList = file.listFiles();
+        for (File chunkFile : fileList) {
+            if (chunkFile.isDirectory()) {
+                File[] chunkFileList = chunkFile.listFiles();
+                String filename = null;
+                String path = null;
+                if (chunkFileList!=null&&chunkFileList.length>0) {
+                    filename = chunkFileList[0].getName();
+                    path = chunkFileList[0].getPath();
+                }
+                chunkList.add(new Chunk(Long.valueOf(chunkFile.getName()), filename, path));
+            }
+        }
+
+    }
+
+    // 1. åŠ è½½nodeinfo,chunklist
+    // 2. å¯åŠ¨åå°çš„çº¿ç¨‹(å¿ƒè·³,blockreport)
+    // 3. å‘å¸ƒrpcæœåŠ¡
 }

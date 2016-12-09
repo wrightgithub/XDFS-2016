@@ -1,41 +1,75 @@
 package com.xdfs.common.util;
 
-import com.alibaba.dubbo.config.ApplicationConfig;
-import com.alibaba.dubbo.config.ReferenceConfig;
-import com.alibaba.dubbo.config.RegistryConfig;
+import com.alibaba.dubbo.config.*;
 
 /**
  * Created by xyy on 16-12-4.
  */
-public class RpcUtil<T> {
+public class RpcUtil {
 
-    public T getService(Class<T> cls) {
+    public static <T> T getService(Class<T> cls) {
         return getService(cls, null);
     }
 
-    public T getService(Class<T> cls, String url) {
+    public static<T> T getService(Class<T> cls, String url) {
 
-        // µ±Ç°Ó¦ÓÃÅäÖÃ
+        // å½“å‰åº”ç”¨é…ç½®
         ApplicationConfig application = new ApplicationConfig();
         application.setName("yyy");
 
-        // Á¬½Ó×¢²áÖĞĞÄÅäÖÃ
+        // è¿æ¥æ³¨å†Œä¸­å¿ƒé…ç½®
         RegistryConfig registry = new RegistryConfig();
         registry.setProtocol("zookeeper");
         registry.setAddress("127.0.0.1:2181,127.0.0.1:2182,127.0.0.1:2183");
-        // ×¢Òâ£ºReferenceConfigÎªÖØ¶ÔÏó£¬ÄÚ²¿·â×°ÁËÓë×¢²áÖĞĞÄµÄÁ¬½Ó£¬ÒÔ¼°Óë·şÎñÌá¹©·½µÄÁ¬½Ó
+        // æ³¨æ„ï¼šReferenceConfigä¸ºé‡å¯¹è±¡ï¼Œå†…éƒ¨å°è£…äº†ä¸æ³¨å†Œä¸­å¿ƒçš„è¿æ¥ï¼Œä»¥åŠä¸æœåŠ¡æä¾›æ–¹çš„è¿æ¥
 
-        // ÒıÓÃÔ¶³Ì·şÎñ
-        ReferenceConfig<T> reference = new ReferenceConfig<T>(); // ´ËÊµÀıºÜÖØ£¬·â×°ÁËÓë×¢²áÖĞĞÄµÄÁ¬½ÓÒÔ¼°ÓëÌá¹©ÕßµÄÁ¬½Ó£¬Çë×ÔĞĞ»º´æ£¬·ñÔò¿ÉÄÜÔì³ÉÄÚ´æºÍÁ¬½ÓĞ¹Â©
+        // å¼•ç”¨è¿œç¨‹æœåŠ¡
+        ReferenceConfig<T> reference = new ReferenceConfig<T>(); // æ­¤å®ä¾‹å¾ˆé‡ï¼Œå°è£…äº†ä¸æ³¨å†Œä¸­å¿ƒçš„è¿æ¥ä»¥åŠä¸æä¾›è€…çš„è¿æ¥ï¼Œè¯·è‡ªè¡Œç¼“å­˜ï¼Œå¦åˆ™å¯èƒ½é€ æˆå†…å­˜å’Œè¿æ¥æ³„æ¼
         reference.setApplication(application);
-        reference.setRegistry(registry); // ¶à¸ö×¢²áÖĞĞÄ¿ÉÒÔÓÃsetRegistries()
+        reference.setRegistry(registry); // å¤šä¸ªæ³¨å†Œä¸­å¿ƒå¯ä»¥ç”¨setRegistries()
         reference.setInterface(cls);
-        // Èç¹ûµã¶ÔµãÖ±Á¬£¬¿ÉÒÔÓÃreference.setUrl()Ö¸¶¨Ä¿±êµØÖ·£¬ÉèÖÃurlºó½«ÈÆ¹ı×¢²áÖĞĞÄ
+        reference.setTimeout(1000);
+        // å¦‚æœç‚¹å¯¹ç‚¹ç›´è¿ï¼Œå¯ä»¥ç”¨reference.setUrl()æŒ‡å®šç›®æ ‡åœ°å€ï¼Œè®¾ç½®urlåå°†ç»•è¿‡æ³¨å†Œä¸­å¿ƒ
         if (url != null) {
 
             reference.setUrl(url);
         }
         // reference.setVersion("1.0.0");
         return reference.get();
+    }
+
+    public static<T> void providService(Class<T> cls, T serviceImpl,int port) {
+
+        // å½“å‰åº”ç”¨é…ç½®
+        ApplicationConfig application = new ApplicationConfig();
+        application.setName("xxx");
+
+        // è¿æ¥æ³¨å†Œä¸­å¿ƒé…ç½®
+        RegistryConfig registry = new RegistryConfig();
+        registry.setProtocol("zookeeper");
+        registry.setAddress("127.0.0.1:2181,127.0.0.1:2182,127.0.0.1:2183");
+        registry.setUsername("aaa");
+        registry.setPassword("bbb");
+        registry.setRegister(false);// ç›®å‰ä¸å»æ³¨å†Œï¼Œç›´è¿
+
+        // æœåŠ¡æä¾›è€…åè®®é…ç½®
+        ProtocolConfig protocol = new ProtocolConfig();
+        protocol.setName("dubbo");
+        protocol.setPort(port);
+        protocol.setThreads(5);
+
+        // æ³¨æ„ï¼šServiceConfigä¸ºé‡å¯¹è±¡ï¼Œå†…éƒ¨å°è£…äº†ä¸æ³¨å†Œä¸­å¿ƒçš„è¿æ¥ï¼Œä»¥åŠå¼€å¯æœåŠ¡ç«¯å£
+
+        // æœåŠ¡æä¾›è€…æš´éœ²æœåŠ¡é…ç½®
+        ServiceConfig<T> service = new ServiceConfig<T>(); // æ­¤å®ä¾‹å¾ˆé‡ï¼Œå°è£…äº†ä¸æ³¨å†Œä¸­å¿ƒçš„è¿æ¥ï¼Œè¯·è‡ªè¡Œç¼“å­˜ï¼Œå¦åˆ™å¯èƒ½é€ æˆå†…å­˜å’Œè¿æ¥æ³„æ¼
+        service.setApplication(application);
+        service.setRegistry(registry); // å¤šä¸ªæ³¨å†Œä¸­å¿ƒå¯ä»¥ç”¨setRegistries()
+        service.setProtocol(protocol); // å¤šä¸ªåè®®å¯ä»¥ç”¨setProtocols()
+        service.setInterface(cls);
+        service.setRef(serviceImpl);
+        // service.setVersion("1.0.0");
+
+        // æš´éœ²åŠæ³¨å†ŒæœåŠ¡
+        service.export();
     }
 }

@@ -8,6 +8,7 @@
 
 target
 .idea 
+fileSys
 
 *.log.*
 *.log
